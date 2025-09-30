@@ -1,0 +1,8 @@
+# requirements.txt
+fastapi
+uvicorn
+python-multipart
+streamlit
+requests
+PyMuPDF
+python-dotenv
