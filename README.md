@@ -53,7 +53,7 @@ This project was built as a portfolio piece targeting an AI/ML Engineer role, de
     # LLM_PROVIDER="huggingface"
     # HF_TOKEN="hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     # HF_MODEL="meta-llama/Llama-3.1-8B-Instruct"   # optional override
-    # GEMINI_MODEL="gemini-2.0-flash"               # optional override
+    # GEMINI_MODEL="gemini-3.8-flash"               # optional override
     ```
 
 ---

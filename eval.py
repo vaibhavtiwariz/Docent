@@ -6,7 +6,8 @@ Usage:
   1. Drop test PDFs into the `eval/` folder.
   2. Copy `eval/ground_truth.example.json` to `eval/ground_truth.json` and fill
      in the true title/authors for each PDF.
-  3. Set HF_TOKEN in `.env`, then run:  python eval.py
+  3. Set GOOGLE_API_KEY in `.env` (free at https://aistudio.google.com/apikey),
+     or HF_TOKEN with LLM_PROVIDER=huggingface, then run:  python eval.py
 
 Reports per-paper results plus summary accuracy:
   - title_accuracy: exact match after normalizing case/punctuation/whitespace
@@ -46,9 +47,20 @@ def score_authors(predicted: list, actual: list) -> tuple:
 
 
 def main() -> None:
-    if not os.getenv("HF_TOKEN"):
-        print("HF_TOKEN is not set. Add it to .env first, then re-run.")
+    from core.extractor import LLM_PROVIDER
+
+    if LLM_PROVIDER == "huggingface":
+        need, hint = "HF_TOKEN", "Add HF_TOKEN to .env first, then re-run."
+    else:
+        need, hint = (
+            "GOOGLE_API_KEY",
+            "Add GOOGLE_API_KEY to .env first (free at https://aistudio.google.com/apikey), then re-run.",
+        )
+    # core.extractor loads .env on import; also respect an exported env var.
+    if not os.getenv(need):
+        print(f"{need} is not set. {hint}")
         return
+    print(f"Evaluating with provider: {LLM_PROVIDER}")
     if not os.path.exists(GT_FILE):
         print(f"No {GT_FILE} found.")
         print("Copy eval/ground_truth.example.json to eval/ground_truth.json")
