@@ -1,0 +1,1 @@
+{"_instructions":"Copy this file to ground_truth.json and fill in the true title and authors for each PDF in the eval/ folder. Then run: python eval.py","paper1.pdf":{"authors":["First Author","Second Author"],"title":"Exact Title Of The Paper As Printed"},"paper2.pdf":{"authors":["Jane Doe","John Smith","A. N. Other"],"title":"Another Paper Title"}}

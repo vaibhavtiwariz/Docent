@@ -50,7 +50,32 @@ if uploaded_file is not None:
                     height=100
                 )
                 
-                st.button("Save Corrected Metadata")
+                if st.button("Save Corrected Metadata", key="save_correction"):
+                    try:
+                        payload = {
+                            "filename": uploaded_file.name,
+                            "extracted_title": metadata.get("title", ""),
+                            "extracted_authors": metadata.get("authors", []),
+                            "corrected_title": edited_title,
+                            "corrected_authors": [
+                                a.strip() for a in edited_authors_str.split(",") if a.strip()
+                            ],
+                        }
+                        save_resp = requests.post(
+                            "http://127.0.0.1:8000/save-correction/",
+                            json=payload,
+                            timeout=30,
+                        )
+                        if save_resp.status_code == 200:
+                            st.success(
+                                "Correction saved! Your review improves future extractions."
+                            )
+                        else:
+                            st.error(
+                                f"Could not save correction (status {save_resp.status_code})."
+                            )
+                    except requests.exceptions.RequestException as e:
+                        st.error(f"Could not save correction: {e}")
 
             else:
                 error_details = response.json().get("detail", "Unknown error")

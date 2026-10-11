@@ -9,6 +9,12 @@ import uvicorn
 # Import our existing functions from the core module
 from core.parser import extract_text_from_pdf
 from core.extractor import extract_metadata_from_text
+from core.store import init_db, save_correction
+from pydantic import BaseModel
+from typing import List
+
+# Ensure the corrections database exists on startup
+init_db()
 
 # Initialize the FastAPI app
 app = FastAPI(
@@ -63,3 +69,31 @@ async def curate_document(file: UploadFile = File(...)):
 # This allows running the app directly with `python api.py` for simple testing
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+
+class CorrectionIn(BaseModel):
+    filename: str
+    extracted_title: str = ""
+    extracted_authors: List[str] = []
+    corrected_title: str = ""
+    corrected_authors: List[str] = []
+
+
+@app.post("/save-correction/", tags=["Curation"])
+def save_correction_endpoint(correction: CorrectionIn):
+    """
+    Stores a human-reviewed correction (AI output vs. corrected values)
+    in the local SQLite database. This closes the human-in-the-loop loop:
+    corrections accumulate into an evaluation/improvement dataset.
+    """
+    try:
+        row_id = save_correction(
+            filename=correction.filename,
+            extracted_title=correction.extracted_title,
+            extracted_authors=correction.extracted_authors,
+            corrected_title=correction.corrected_title,
+            corrected_authors=correction.corrected_authors,
+        )
+        return JSONResponse(status_code=200, content={"status": "saved", "id": row_id})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to save correction: {e}")
