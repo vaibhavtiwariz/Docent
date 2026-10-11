@@ -14,6 +14,7 @@ Both paths return {"title": str, "authors": [str]}.
 """
 
 import os
+import re
 import requests
 import json
 from dotenv import load_dotenv
@@ -30,6 +31,15 @@ HF_API_URL = "https://router.huggingface.co/v1/chat/completions"
 # --- Google Gemini (AI Studio free tier) ---
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
+
+
+def _safe_error(e: Exception) -> str:
+    """Render an exception without leaking API keys or tokens."""
+    msg = str(e)
+    msg = re.sub(r"key=[^&\s'\"]+", "key=***", msg)
+    msg = re.sub(r"hf_[A-Za-z0-9]+", "hf_***", msg)
+    msg = re.sub(r"Bearer [A-Za-z0-9._-]+", "Bearer ***", msg)
+    return msg
 
 
 def _extract_huggingface(text: str) -> dict:
@@ -80,7 +90,7 @@ def _extract_huggingface(text: str) -> dict:
         }
     except Exception as e:
         print(f"CRITICAL: Metadata extraction failed. Error: {e}")
-        return {"title": "Extraction Failed", "authors": [f"An error occurred: {e}"]}
+        return {"title": "Extraction Failed", "authors": [f"An error occurred: {_safe_error(e)}"]}
 
 
 def _extract_gemini(text: str) -> dict:
@@ -128,7 +138,7 @@ def _extract_gemini(text: str) -> dict:
         }
     except Exception as e:
         print(f"CRITICAL: Metadata extraction failed. Error: {e}")
-        return {"title": "Extraction Failed", "authors": [f"An error occurred: {e}"]}
+        return {"title": "Extraction Failed", "authors": [f"An error occurred: {_safe_error(e)}"]}
 
 
 def extract_metadata_from_text(text: str) -> dict:

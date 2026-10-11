@@ -18,7 +18,7 @@ init_db()
 
 # Initialize the FastAPI app
 app = FastAPI(
-    title="Intelli-Curate API",
+    title="Docent API",
     description="An API for intelligent metadata extraction from research papers.",
     version="1.0.0"
 )
