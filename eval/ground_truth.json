@@ -1,0 +1,17 @@
+{
+  "paper1-r1.pdf": {
+    "title": "From Concept to Reality: Additive Manufacturing in Particle Accelerator and Storage Ring R&D at GSI and for FAIR",
+    "authors": [
+      "Chuan Zhang",
+      "Roland Böhm",
+      "Eduard Boos",
+      "Ramy Cherif",
+      "Alexander Japs",
+      "Stefan Wunderlich"
+    ]
+  },
+  "paper2-docker-cheatsheet.pdf": {
+    "title": "Docker Commands",
+    "authors": []
+  }
+}
