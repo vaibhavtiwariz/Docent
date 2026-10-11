@@ -1,6 +1,6 @@
 # eval.py
 """
-Evaluate Intelli-Curate's metadata extraction accuracy.
+Evaluate Docent's metadata extraction accuracy.
 
 Usage:
   1. Drop test PDFs into the `eval/` folder.

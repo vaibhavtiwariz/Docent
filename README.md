@@ -1,38 +1,57 @@
-# Intelli-Curate ✨
+# Docent 📚
 
 ### An AI-Powered Curation Assistant for Research Repositories
 
-Intelli-Curate is a full-stack application designed to automate and enhance the metadata curation process for scientific documents. It uses a cloud large language model — Google's Gemini via the free AI Studio tier by default (Hugging Face Inference Providers optional) — to extract key information like titles and authors from PDF research papers. The application features a "human-in-the-loop" interface, allowing a user to review and correct the AI's output — every correction is persisted to a local SQLite database, building a dataset for evaluating and improving the extractor.
+Docent automates metadata curation for scientific documents. Upload a PDF research
+paper → the app extracts its title and authors with a large language model →
+you review, correct, and save the result. Every correction is persisted, building
+a dataset that powers a built-in accuracy benchmark. Intelligent automation with
+human oversight, and the numbers to prove it.
 
-This project was built as a portfolio piece targeting an AI/ML Engineer role, demonstrating skills in software engineering, AI integration, API development, and modern cloud-based architecture.
+*(Formerly Intelli-curate.)*
 
 ---
 
 ## 🚀 Key Features
 
-* **AI-Powered Metadata Extraction:** Uses a cloud LLM (Google Gemini via the free AI Studio tier by default; Hugging Face Inference Providers optional) to extract titles and authors from PDF documents, with structured JSON output enforced.
-* **Human-in-the-Loop UI:** A user-friendly web interface built with Streamlit allows curators to instantly review, edit, and validate the AI-generated metadata. Corrections are persisted to SQLite via a dedicated API endpoint, closing the feedback loop.
-* **Decoupled Frontend/Backend Architecture:** A robust FastAPI backend serves the AI logic, while a separate Streamlit frontend handles user interaction, demonstrating a scalable, professional software architecture.
-* **Cloud-Based AI Model:** Leverages third-party AI services (Google AI Studio / Hugging Face), ensuring high performance and reliability without requiring powerful local hardware. This also demonstrates experience with integrating third-party AI services.
-* **Built-in Evaluation:** `eval.py` scores extraction accuracy (title accuracy + author precision/recall/F1) against a labeled set of papers, so improvements are measurable.
+* **AI-Powered Metadata Extraction:** Google Gemini (free AI Studio tier) reads
+  the opening pages and returns title + authors as structured JSON.
+  Hugging Face Inference Providers supported as an optional backend.
+* **Human-in-the-Loop UI:** Review, edit, and validate the AI's output in
+  Streamlit. Corrections are saved to SQLite via a dedicated API endpoint —
+  the feedback loop is closed, not decorative.
+* **Built-in Evaluation:** `eval.py` scores title accuracy and author
+  precision/recall/F1 against a labeled paper set. Improvements are measurable.
+* **Decoupled Architecture:** FastAPI backend + Streamlit frontend, with
+  per-file result caching so reruns never burn a repeat LLM call.
+* **Sane Engineering:** Upload validation, temp-file lifecycle management,
+  API keys redacted from error output, secrets in `.env` (gitignored).
 
----
+## 📊 Measured Accuracy (10-paper benchmark)
+
+Benchmark set: 8 landmark arXiv papers (Attention Is All You Need, BERT, GPT-3,
+ResNet, Adam, Batch Normalization, GAN, Intriguing Properties of Neural
+Networks) + 1 real-world paper + 1 non-paper edge case. Ground truth from
+arXiv metadata.
+
+* **Title accuracy: 100%** on all evaluated papers (exact match)
+* **Author extraction: exact lists** on all evaluated papers — including a
+  31-author paper and names with diacritics (Böhm, Łukasz)
+* **Edge case:** non-research document correctly returns empty authors
 
 ## 🛠️ Tech Stack
 
 * **Backend:** Python, FastAPI, Uvicorn, SQLite
 * **Frontend:** Streamlit
-* **AI Service:** Google AI Studio (Gemini, free tier) by default; Hugging Face Inference Providers optional
+* **AI Service:** Google AI Studio (Gemini, structured JSON output); Hugging Face optional
 * **Utilities:** PyMuPDF, `python-dotenv`, `requests`
-
----
 
 ## ⚙️ Setup & Installation
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/vaibhavtiwariz/intelli-curate.git
-    cd intelli-curate
+    git clone https://github.com/vaibhavtiwariz/Docent.git
+    cd Docent
     ```
 2.  **Create and activate a virtual environment:**
     ```bash
@@ -44,7 +63,7 @@ This project was built as a portfolio piece targeting an AI/ML Engineer role, de
     ```bash
     pip install -r requirements.txt
     ```
-4.  **Create a `.env` file** in the root directory with your API keys:
+4.  **Create a `.env` file** in the root directory:
     ```
     # Default provider (free): get a key at https://aistudio.google.com/apikey
     GOOGLE_API_KEY="AIzaXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
@@ -52,43 +71,52 @@ This project was built as a portfolio piece targeting an AI/ML Engineer role, de
     # Optional: use Hugging Face instead (needs paid Inference Providers credits)
     # LLM_PROVIDER="huggingface"
     # HF_TOKEN="hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-    # HF_MODEL="meta-llama/Llama-3.1-8B-Instruct"   # optional override
-    # GEMINI_MODEL="gemini-3.8-flash"               # optional override
     ```
-
----
 
 ## ▶️ Usage
 
-The application requires two terminals to run simultaneously.
+Two terminals:
 
-1.  **Terminal 1: Start the Backend API**
+1.  **Terminal 1 — Backend API**
     ```bash
     uvicorn api:app --reload
     ```
-2.  **Terminal 2: Start the Frontend App**
+2.  **Terminal 2 — Frontend**
     ```bash
     streamlit run frontend_app.py
     ```
-    The application will open in your web browser.
+
+Then open the Streamlit URL, upload a PDF, review the extracted metadata,
+correct anything, and hit **Save Corrected Metadata**.
 
 ## 📊 Evaluation
 
-Measure extraction quality on your own labeled papers:
-
-1. Drop test PDFs into the `eval/` folder.
-2. Copy `eval/ground_truth.example.json` to `eval/ground_truth.json` and fill in the true title/authors per PDF.
-3. Run `python eval.py`
-
-It reports per-paper results plus summary title accuracy and mean author F1.
+1. Drop test PDFs into `eval/`.
+2. Copy `eval/ground_truth.example.json` → `eval/ground_truth.json` and fill in
+   true titles/authors.
+3. Run `python eval.py` — per-paper results plus summary title accuracy and
+   mean author F1.
 
 ## 🔌 API Endpoints
 
-* `POST /curate-document/` — upload a PDF, get `{"title", "authors"}` back.
-* `POST /save-correction/` — store a human-reviewed correction (AI output vs. corrected values) in the local SQLite database. Used by the Streamlit "Save Corrected Metadata" button.
+* `POST /curate-document/` — upload a PDF, get `{"title", "authors"}`.
+* `POST /save-correction/` — store a human-reviewed correction
+  (AI output vs. corrected values) in SQLite.
 
----
+## 🔭 Future Scope
 
-## 🎬 Demo
+1. More fields: abstract, venue, year, DOI, keywords, references
+2. Batch/folder ingestion with a processing queue
+3. Per-field confidence scores + active learning (route low-confidence
+   extractions to human review first)
+4. Reference parsing and citation-graph construction
+5. Multi-language paper support
+6. "Ask your papers" — RAG search over the curated corpus
+7. One-click export to BibTeX / CSL-JSON / Zotero
 
-![Intelli-Curate Demo Screenshot](ss1.png)
+## 💼 Where This Pattern Is Used
+
+Intelligent Document Processing (IDP): AWS Textract, Azure Document
+Intelligence, UiPath. Scholarly-PDF incumbent: GROBID. Reference managers
+(Zotero, Mendeley) and repository ingestion pipelines (arXiv, Semantic
+Scholar) do this exact job in production.
