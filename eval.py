@@ -19,6 +19,8 @@ import json
 import os
 import re
 import string
+import time
+import unicodedata
 
 from core.parser import extract_text_from_pdf
 from core.extractor import extract_metadata_from_text
@@ -28,6 +30,8 @@ GT_FILE = os.path.join(EVAL_DIR, "ground_truth.json")
 
 
 def normalize(s: str) -> str:
+    # Strip diacritics (Łukasz -> Lukasz), punctuation, case, extra whitespace
+    s = unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode("ascii")
     s = s.lower().translate(str.maketrans("", "", string.punctuation))
     return re.sub(r"\s+", " ", s).strip()
 
@@ -106,6 +110,7 @@ def main() -> None:
         title_hits += int(title_ok)
         f1_scores.append(f1)
         evaluated += 1
+        time.sleep(12)  # respect free-tier rate limits
 
     if evaluated:
         print("\n========== SUMMARY ==========")

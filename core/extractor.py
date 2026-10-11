@@ -104,7 +104,7 @@ def _extract_gemini(text: str) -> dict:
         "generationConfig": {
             "responseMimeType": "application/json",
             "temperature": 0,
-            "maxOutputTokens": 512,
+            "maxOutputTokens": 2048,
         },
     }
 
